@@ -11,20 +11,30 @@ namespace Phonebook
         {
             try
             {
+                FontHelper.LoadFonts();
+                
+                // اگر فونت لود نشده باشد، یک هشدار می‌دهد تا مطمئن شویم فایل‌ها آپلود شده‌اند
+                if (!FontHelper.FontLoaded)
+                {
+                    MessageBox.Show("هشدار: فونت وزیرمتن پیدا نشد! برنامه با فونت پیش‌فرض (Tahoma) اجرا می‌شود. لطفاً مطمئن شوید فایل‌های فونت در پوشه Assets آپلود شده‌اند.", "هشدار فونت", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 Application.Run(new MainForm());
             }
             catch (Exception ex)
             {
-                // ذخیره خطا در یک فایل متنی کنار برنامه
                 try
                 {
-                    File.WriteAllText("error.log", DateTime.Now.ToString() + "\n\n" + ex.ToString());
+                    string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    string logPath = Path.Combine(appData, "Phonebook", "error.log");
+                    Directory.CreateDirectory(Path.GetDirectoryName(logPath));
+                    File.WriteAllText(logPath, DateTime.Now.ToString() + "\n\n" + ex.ToString());
                 }
                 catch { }
 
-                MessageBox.Show("برنامه با خطا مواجه شد. فایل error.log در کنار برنامه بررسی کنید.\n\n" + ex.Message, 
+                MessageBox.Show("برنامه با خطا مواجه شد. فایل error.log در AppData بررسی کنید.\n\n" + ex.Message, 
                                 "خطای مهلک", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
