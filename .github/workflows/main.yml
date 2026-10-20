@@ -1,0 +1,32 @@
+name: Build Phonebook EXE
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1.3
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.1.1
+
+    - name: Restore Packages
+      run: nuget restore Phonebook.csproj
+
+    - name: Build Project
+      run: msbuild Phonebook.csproj /p:Configuration=Release /p:Platform=AnyCPU
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Phonebook-Executable
+        path: bin/Release/
