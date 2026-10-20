@@ -7,17 +7,29 @@ namespace Phonebook
 {
     public class RoundedButton : Button
     {
-        public int CornerRadius { get; set; } = 10;
+        public int CornerRadius { get; set; } = 8;
         public Color HoverColor { get; set; } = Color.Empty;
 
         public RoundedButton()
         {
+            this.DoubleBuffered = true;
             this.FlatStyle = FlatStyle.Flat;
             this.FlatAppearance.BorderSize = 0;
             this.BackColor = Color.FromArgb(13, 110, 253);
             this.ForeColor = Color.White;
-            this.Font = new Font("Tahoma", 9, FontStyle.Bold);
+            this.Font = FontHelper.GetFont(10, FontStyle.Bold);
             this.Cursor = Cursors.Hand;
+            this.Size = new Size(100, 35);
+        }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            // بریدن فیزیکی گوشه‌ها برای اینکه دالبر نداشته باشد
+            using (var path = GetRoundedPath(ClientRectangle, CornerRadius))
+            {
+                this.Region = new Region(path);
+            }
         }
 
         protected override void OnPaint(PaintEventArgs pevent)
@@ -25,9 +37,11 @@ namespace Phonebook
             Graphics g = pevent.Graphics;
             g.SmoothingMode = SmoothingMode.AntiAlias;
             Rectangle rect = new Rectangle(0, 0, this.Width, this.Height);
-            GraphicsPath path = GetRoundedPath(rect, CornerRadius);
+            using (GraphicsPath path = GetRoundedPath(rect, CornerRadius))
             using (SolidBrush brush = new SolidBrush(this.BackColor))
+            {
                 g.FillPath(brush, path);
+            }
             TextRenderer.DrawText(g, this.Text, this.Font, rect, this.ForeColor,
                 TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
