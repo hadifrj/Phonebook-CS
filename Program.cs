@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace Phonebook
@@ -16,9 +17,15 @@ namespace Phonebook
             }
             catch (Exception ex)
             {
-                // اگر هر خطایی رخ داد، این پنجره باز می‌شود و متن خطا را نشان می‌دهد
-                MessageBox.Show("خطای مهلک در اجرای برنامه:\n\n" + ex.ToString(), 
-                                "خطا", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // ذخیره خطا در یک فایل متنی کنار برنامه
+                try
+                {
+                    File.WriteAllText("error.log", DateTime.Now.ToString() + "\n\n" + ex.ToString());
+                }
+                catch { }
+
+                MessageBox.Show("برنامه با خطا مواجه شد. فایل error.log در کنار برنامه بررسی کنید.\n\n" + ex.Message, 
+                                "خطای مهلک", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
