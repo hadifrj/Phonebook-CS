@@ -1,4 +1,3 @@
-
 using System;
 using System.Drawing;
 using System.Drawing.Text;
@@ -11,25 +10,26 @@ namespace Phonebook
     public static class FontHelper
     {
         private static PrivateFontCollection _fonts = new PrivateFontCollection();
-        public static string FamilyName = "Tahoma"; // فونت پیش‌فرض در صورت خطا
+        public static string FamilyName = "Tahoma";
+        public static bool FontLoaded = false;
 
         public static void LoadFonts()
         {
             try
             {
                 var assembly = Assembly.GetExecutingAssembly();
-                // نام منابع دقیقاً طبق LogicalName در فایل csproj تنظیم شده است
                 LoadFont(assembly, "Phonebook.Vazirmatn-Regular.ttf");
                 LoadFont(assembly, "Phonebook.Vazirmatn-Bold.ttf");
                 
                 if (_fonts.Families.Length > 0)
                 {
                     FamilyName = _fonts.Families[0].Name;
+                    FontLoaded = true;
                 }
             }
             catch 
             {
-                // اگر فونت لود نشد، برنامه کرش نمی‌کند و از Tahoma استفاده می‌کند
+                // در صورت خطا، برنامه نباید کرش کند
             }
         }
 
@@ -53,14 +53,11 @@ namespace Phonebook
         {
             try 
             { 
-                // از فونت لود شده استفاده می‌کند
-                return new Font(_fonts.Families[0], size, style); 
+                if (FontLoaded && _fonts.Families.Length > 0)
+                    return new Font(_fonts.Families[0], size, style); 
             }
-            catch 
-            { 
-                // اگر فونت نبود، از Tahoma استفاده می‌کند
-                return new Font("Tahoma", size, style); 
-            }
+            catch { }
+            return new Font("Tahoma", size, style); 
         }
     }
 }
