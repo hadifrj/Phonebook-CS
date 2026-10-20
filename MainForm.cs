@@ -44,20 +44,35 @@ namespace Phonebook
                 this.Region = new Region(path);
             };
 
+            // دکمه مشتری جدید
             var btnAdd = new RoundedButton { Text = "+ مشتری جدید", Location = new Point(20, 20), Size = new Size(120, 35) };
             btnAdd.Click += (s, e) => AddCustomer();
             this.Controls.Add(btnAdd);
 
+            // جستجو
             var lblSearch = new Label { Text = "جستجو:", Location = new Point(160, 28), AutoSize = true };
             txtSearch = new TextBox { Location = new Point(210, 25), Width = 200 };
             txtSearch.TextChanged += (s, e) => BindData();
             this.Controls.Add(lblSearch);
             this.Controls.Add(txtSearch);
 
-            gridCustomers = new DataGridView { Location = new Point(20, 70), Size = new Size(400, 520), AllowUserToAddRows = false, ReadOnly = true, SelectionMode = DataGridViewSelectionMode.FullRowSelect, AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, BackgroundColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            // جدول مشتریان (ستون‌ها دستی تعریف می‌شوند)
+            gridCustomers = new DataGridView 
+            { 
+                Location = new Point(20, 70), Size = new Size(400, 520), 
+                AllowUserToAddRows = false, ReadOnly = true, 
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect, 
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill, 
+                BackgroundColor = Color.White, BorderStyle = BorderStyle.FixedSingle,
+                AutoGenerateColumns = false
+            };
+            gridCustomers.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", HeaderText = "نام مشتری", FillWeight = 50 });
+            gridCustomers.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Address", HeaderText = "آدرس", FillWeight = 40 });
+            gridCustomers.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "PostalCode", HeaderText = "کد پستی", FillWeight = 15 });
             gridCustomers.SelectionChanged += (s, e) => SelectCustomer();
             this.Controls.Add(gridCustomers);
 
+            // پنل جزئیات
             var panelDetails = new Panel { Location = new Point(440, 70), Size = new Size(530, 520), BorderStyle = BorderStyle.FixedSingle };
             this.Controls.Add(panelDetails);
 
@@ -67,6 +82,7 @@ namespace Phonebook
             txtAddress = new TextBox { Location = new Point(200, 60), Width = 300 };
             var lblPostal = new Label { Text = "کد پستی:", Location = new Point(400, 100), AutoSize = true };
             txtPostal = new TextBox { Location = new Point(200, 100), Width = 300 };
+            
             var btnSave = new RoundedButton { Text = "ذخیره", Location = new Point(200, 150), Size = new Size(100, 35) };
             btnSave.Click += (s, e) => SaveCustomer();
             var btnDelete = new RoundedButton { Text = "حذف", Location = new Point(310, 150), Size = new Size(100, 35), BackColor = Color.FromArgb(220, 53, 69) };
@@ -74,10 +90,29 @@ namespace Phonebook
 
             panelDetails.Controls.AddRange(new Control[] { lblName, txtName, lblAddress, txtAddress, lblPostal, txtPostal, btnSave, btnDelete });
 
-            gridPhones = new DataGridView { Location = new Point(20, 230), Size = new Size(480, 130), AllowUserToAddRows = false, ReadOnly = true, BackgroundColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            // جدول شماره‌ها
+            gridPhones = new DataGridView 
+            { 
+                Location = new Point(20, 230), Size = new Size(480, 130), 
+                AllowUserToAddRows = false, ReadOnly = true, 
+                BackgroundColor = Color.White, BorderStyle = BorderStyle.FixedSingle,
+                AutoGenerateColumns = false 
+            };
+            gridPhones.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Label", HeaderText = "نوع", Width = 150 });
+            gridPhones.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Number", HeaderText = "شماره", Width = 250 });
             panelDetails.Controls.Add(gridPhones);
 
-            gridPersons = new DataGridView { Location = new Point(20, 370), Size = new Size(480, 130), AllowUserToAddRows = false, ReadOnly = true, BackgroundColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+            // جدول افراد
+            gridPersons = new DataGridView 
+            { 
+                Location = new Point(20, 370), Size = new Size(480, 130), 
+                AllowUserToAddRows = false, ReadOnly = true, 
+                BackgroundColor = Color.White, BorderStyle = BorderStyle.FixedSingle,
+                AutoGenerateColumns = false 
+            };
+            gridPersons.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Name", HeaderText = "نام فرد", Width = 150 });
+            gridPersons.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Role", HeaderText = "سمت", Width = 150 });
+            gridPersons.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Phone", HeaderText = "تلفن", Width = 150 });
             panelDetails.Controls.Add(gridPersons);
         }
 
@@ -94,7 +129,12 @@ namespace Phonebook
                         var wsCustomers = package.Workbook.Worksheets["Customers"];
                         var wsPhones = package.Workbook.Worksheets["Phones"];
                         var wsPersons = package.Workbook.Worksheets["Persons"];
-                        if (wsCustomers == null) return;
+                        
+                        if (wsCustomers == null || wsCustomers.Dimension == null) 
+                        { 
+                            MessageBox.Show("شیت Customers در اکسل خالی است یا پیدا نشد!"); 
+                            return; 
+                        }
 
                         for (int row = 2; row <= wsCustomers.Dimension.End.Row; row++)
                         {
@@ -102,7 +142,8 @@ namespace Phonebook
                             if (string.IsNullOrWhiteSpace(name)) continue;
                             _customers.Add(new Customer { Id = row, Name = name, Address = wsCustomers.Cells[row, 2].Text, PostalCode = wsCustomers.Cells[row, 3].Text });
                         }
-                        if (wsPhones != null)
+                        
+                        if (wsPhones != null && wsPhones.Dimension != null)
                         {
                             for (int row = 2; row <= wsPhones.Dimension.End.Row; row++)
                             {
@@ -110,7 +151,8 @@ namespace Phonebook
                                 if (customer != null) customer.Phones.Add(new Phone { Label = wsPhones.Cells[row, 2].Text, Number = wsPhones.Cells[row, 3].Text });
                             }
                         }
-                        if (wsPersons != null)
+                        
+                        if (wsPersons != null && wsPersons.Dimension != null)
                         {
                             for (int row = 2; row <= wsPersons.Dimension.End.Row; row++)
                             {
@@ -128,17 +170,9 @@ namespace Phonebook
         {
             var search = txtSearch.Text.Trim();
             var filtered = _customers.Where(c => c.Name.Contains(search) || c.Address.Contains(search) || c.PostalCode.Contains(search) || c.Phones.Any(p => p.Number.Contains(search))).ToList();
+            
             gridCustomers.DataSource = null;
             gridCustomers.DataSource = filtered;
-            if (gridCustomers.Columns.Count > 0)
-            {
-                gridCustomers.Columns["Id"].Visible = false;
-                gridCustomers.Columns["Name"].HeaderText = "نام مشتری";
-                gridCustomers.Columns["Address"].HeaderText = "آدرس";
-                gridCustomers.Columns["PostalCode"].HeaderText = "کد پستی";
-                gridCustomers.Columns["Phones"].Visible = false;
-                gridCustomers.Columns["Persons"].Visible = false;
-            }
         }
 
         private void SelectCustomer()
@@ -153,22 +187,9 @@ namespace Phonebook
 
             gridPhones.DataSource = null;
             gridPhones.DataSource = _selectedCustomer.Phones;
-            if (gridPhones.Columns.Count > 0)
-            {
-                gridPhones.Columns["Id"].Visible = false;
-                gridPhones.Columns["Label"].HeaderText = "نوع";
-                gridPhones.Columns["Number"].HeaderText = "شماره";
-            }
 
             gridPersons.DataSource = null;
             gridPersons.DataSource = _selectedCustomer.Persons;
-            if (gridPersons.Columns.Count > 0)
-            {
-                gridPersons.Columns["Id"].Visible = false;
-                gridPersons.Columns["Name"].HeaderText = "نام فرد";
-                gridPersons.Columns["Role"].HeaderText = "سمت";
-                gridPersons.Columns["Phone"].HeaderText = "تلفن";
-            }
         }
 
         private void AddCustomer()
