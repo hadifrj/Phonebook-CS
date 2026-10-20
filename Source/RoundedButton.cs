@@ -8,14 +8,17 @@ namespace Phonebook
     public class RoundedButton : Button
     {
         public int CornerRadius { get; set; } = 8;
-        public Color HoverColor { get; set; } = Color.Empty;
+        public Color HoverColor { get; set; } = Color.FromArgb(15, 91, 84);
+        private Color _normalColor = Color.FromArgb(20, 115, 105);
+        private bool _changingHover;
 
         public RoundedButton()
         {
             this.DoubleBuffered = true;
             this.FlatStyle = FlatStyle.Flat;
             this.FlatAppearance.BorderSize = 0;
-            this.BackColor = Color.FromArgb(13, 110, 253);
+            this.BackColor = Color.FromArgb(20, 115, 105);
+            _normalColor = this.BackColor;
             this.ForeColor = Color.White;
             this.Font = FontHelper.GetFont(10, FontStyle.Bold);
             this.Cursor = Cursors.Hand;
@@ -49,13 +52,19 @@ namespace Phonebook
         protected override void OnMouseEnter(EventArgs e)
         {
             base.OnMouseEnter(e);
-            if (HoverColor != Color.Empty) this.BackColor = HoverColor;
+            if (HoverColor != Color.Empty)
+            {
+                _normalColor = this.BackColor;
+                _changingHover = true;
+                this.BackColor = HoverColor;
+                _changingHover = false;
+            }
         }
 
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
-            this.BackColor = Color.FromArgb(13, 110, 253);
+            this.BackColor = _normalColor;
         }
 
         private GraphicsPath GetRoundedPath(Rectangle rect, int radius)
