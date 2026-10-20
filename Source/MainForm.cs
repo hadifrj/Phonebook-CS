@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D; // این خط اضافه شد
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
@@ -62,7 +62,30 @@ namespace Phonebook
             this.Controls.Add(panelTop);
 
             // ---------------- بدنه اصلی (Split) ----------------
-            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical, FixedPanel = FixedPanel.Panel2, SplitterDistance = 690, BackColor = Color.FromArgb(242, 246, 250), BorderStyle = BorderStyle.None, Panel1MinSize = 320, Panel2MinSize = 340 };
+            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical, FixedPanel = FixedPanel.Panel2, BackColor = Color.FromArgb(242, 246, 250), BorderStyle = BorderStyle.None };
+            // حداقل اندازه‌ها را پس از ایجاد کنترل و با توجه به عرض واقعی تنظیم می‌کنیم؛
+            // تنظیم فاصله ثابت در سازنده می‌تواند روی بعضی نمایشگرها باعث خطای شروع برنامه شود.
+            split.Panel1MinSize = 0;
+            split.Panel2MinSize = 0;
+            split.SplitterDistance = 320;
+            split.SizeChanged += (s, e) =>
+            {
+                if (split.Width <= 0 || split.IsDisposed) return;
+                int available = split.Width - split.SplitterWidth;
+                if (available <= 1) return;
+                int leftMin = Math.Min(320, Math.Max(0, available - 1));
+                int rightMin = Math.Min(340, Math.Max(0, available - leftMin));
+                split.Panel1MinSize = leftMin;
+                split.Panel2MinSize = rightMin;
+                int minDistance = split.Panel1MinSize;
+                int maxDistance = Math.Max(minDistance, split.Width - split.SplitterWidth - split.Panel2MinSize);
+                int desired = Math.Min(690, maxDistance);
+                desired = Math.Max(minDistance, desired);
+                if (split.SplitterDistance != desired)
+                {
+                    try { split.SplitterDistance = desired; } catch (ArgumentOutOfRangeException) { }
+                }
+            };
             split.Panel1.Padding = new Padding(10, 10, 10, 10); // لیست (چپ)
             split.Panel2.Padding = new Padding(10, 10, 10, 10); // جزئیات (راست)
             this.Controls.Add(split);
