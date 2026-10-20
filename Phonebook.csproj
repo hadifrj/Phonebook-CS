@@ -28,15 +28,14 @@
     <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
-    <!-- فایل‌های کد در پوشه Source قرار گرفتند -->
     <Compile Include="Source\MainForm.cs" />
     <Compile Include="Source\Models.cs" />
     <Compile Include="Source\Program.cs" />
     <Compile Include="Source\RoundedButton.cs" />
     <Compile Include="Source\FontHelper.cs" />
+    <Compile Include="Source\FormDialog.cs" />
   </ItemGroup>
   <ItemGroup>
-    <!-- فایل‌ها در پوشه Assets قرار گرفتند اما با LogicalName در حافظه با نام قبلی شناخته می‌شوند -->
     <EmbeddedResource Include="Assets\customers.xlsx">
       <LogicalName>Phonebook.customers.xlsx</LogicalName>
     </EmbeddedResource>
