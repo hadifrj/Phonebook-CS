@@ -23,6 +23,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainForm.cs" />
@@ -31,7 +34,6 @@
     <Compile Include="RoundedButton.cs" />
   </ItemGroup>
   <ItemGroup>
-    <!-- فایل اکسل به عنوان منبع داخلی جاسازی می‌شود -->
     <EmbeddedResource Include="customers.xlsx" />
   </ItemGroup>
   <ItemGroup>
