@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Drawing2D; // این خط اضافه شد
+using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.IO;
 using System.Linq;
@@ -30,9 +30,11 @@ namespace Phonebook
         private void InitializeUI()
         {
             this.Text = "دفترچه تلفن پرتابل";
-            this.Size = new Size(1150, 720);
+            this.Size = new Size(1240, 780);
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.BackColor = Color.FromArgb(238, 241, 247);
+            this.BackColor = Color.FromArgb(242, 246, 250);
+            this.ForeColor = Color.FromArgb(36, 48, 68);
+            this.MinimumSize = new Size(980, 640);
             this.Font = FontHelper.GetFont(10);
             
             // آپدیت گوشه‌های پنجره با تغییر سایز
@@ -46,32 +48,33 @@ namespace Phonebook
             };
 
             // ---------------- هدر بالا ----------------
-            var panelTop = new Panel { Dock = DockStyle.Top, Height = 65, BackColor = Color.White };
-            panelTop.Paint += (s, e) => e.Graphics.DrawLine(new Pen(Color.FromArgb(215, 220, 230)), 0, panelTop.Height - 1, panelTop.Width, panelTop.Height - 1);
+            var panelTop = new Panel { Dock = DockStyle.Top, Height = 72, BackColor = Color.White, Padding = new Padding(12, 0, 12, 0) };
+            panelTop.Paint += (s, e) => e.Graphics.DrawLine(new Pen(Color.FromArgb(226, 232, 240)), 0, panelTop.Height - 1, panelTop.Width, panelTop.Height - 1);
             
-            var btnAdd = new RoundedButton { Text = "+ مشتری جدید", Location = new Point(20, 15), Size = new Size(130, 36) };
+            var btnAdd = new RoundedButton { Text = "+ مشتری جدید", Location = new Point(20, 17), Size = new Size(142, 38), BackColor = Color.FromArgb(20, 115, 105), HoverColor = Color.FromArgb(15, 91, 84), CornerRadius = 10 };
             btnAdd.Click += (s, e) => AddCustomer();
             
-            var lblSearch = new Label { Text = "جستجو:", Location = new Point(170, 23), AutoSize = true, Font = FontHelper.GetFont(11, FontStyle.Bold) };
-            txtSearch = new TextBox { Location = new Point(230, 20), Width = 250, Font = FontHelper.GetFont(11) };
+            var lblSearch = new Label { Text = "جستجوی مشتری", Location = new Point(175, 25), AutoSize = true, ForeColor = Color.FromArgb(74, 89, 112), Font = FontHelper.GetFont(10, FontStyle.Bold) };
+            txtSearch = new TextBox { Location = new Point(230, 18), Width = 285, Height = 30, Font = FontHelper.GetFont(11), BorderStyle = BorderStyle.FixedSingle, BackColor = Color.FromArgb(247, 249, 252), ForeColor = Color.FromArgb(36, 48, 68), RightToLeft = RightToLeft.Yes };
             txtSearch.TextChanged += (s, e) => BindData();
             
             panelTop.Controls.AddRange(new Control[] { btnAdd, lblSearch, txtSearch });
             this.Controls.Add(panelTop);
 
             // ---------------- بدنه اصلی (Split) ----------------
-            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical, FixedPanel = FixedPanel.Panel2, SplitterDistance = 650 };
+            var split = new SplitContainer { Dock = DockStyle.Fill, Orientation = Orientation.Vertical, FixedPanel = FixedPanel.Panel2, SplitterDistance = 690, BackColor = Color.FromArgb(242, 246, 250), BorderStyle = BorderStyle.None, Panel1MinSize = 320, Panel2MinSize = 340 };
             split.Panel1.Padding = new Padding(10, 10, 10, 10); // لیست (چپ)
             split.Panel2.Padding = new Padding(10, 10, 10, 10); // جزئیات (راست)
             this.Controls.Add(split);
             split.BringToFront();
 
             // ================== سمت راست: جزئیات (تب‌بندی) ==================
-            tabDetails = new TabControl { Dock = DockStyle.Fill, Font = FontHelper.GetFont(11) };
+            tabDetails = new TabControl { Dock = DockStyle.Fill, Font = FontHelper.GetFont(10, FontStyle.Bold), Padding = new Point(14, 7), HotTrack = true };
             
             // --- تب 1: مشخصات ---
             var tabInfo = new TabPage("مشخصات");
             tabInfo.BackColor = Color.White;
+            tabInfo.ForeColor = Color.FromArgb(36, 48, 68);
             var tlpInfo = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 6, Padding = new Padding(20) };
             tlpInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
             tlpInfo.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
@@ -89,11 +92,11 @@ namespace Phonebook
             tlpInfo.Controls.Add(txtPostal, 0, 2);
 
             var flowBtns = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft, Margin = new Padding(0, 15, 0, 0) };
-            var btnSave = new RoundedButton { Text = "ذخیره تغییرات", Size = new Size(120, 36), BackColor = Color.FromArgb(25, 135, 84) };
+            var btnSave = new RoundedButton { Text = "ذخیره تغییرات", Size = new Size(120, 36), BackColor = Color.FromArgb(20, 115, 105) };
             btnSave.Click += (s, e) => SaveCustomer();
-            var btnDelete = new RoundedButton { Text = "حذف", Size = new Size(100, 36), BackColor = Color.FromArgb(220, 53, 69) };
+            var btnDelete = new RoundedButton { Text = "حذف", Size = new Size(100, 36), BackColor = Color.FromArgb(190, 55, 75) };
             btnDelete.Click += (s, e) => DeleteCustomer();
-            var btnPrint = new RoundedButton { Text = "چاپ آدرس پستی", Size = new Size(130, 36), BackColor = Color.FromArgb(255, 193, 7), ForeColor = Color.Black };
+            var btnPrint = new RoundedButton { Text = "چاپ آدرس پستی", Size = new Size(130, 36), BackColor = Color.FromArgb(230, 166, 55), ForeColor = Color.Black };
             btnPrint.Click += (s, e) => PrintAddress();
             
             flowBtns.Controls.Add(btnSave);
@@ -113,7 +116,7 @@ namespace Phonebook
             var flowPhoneBtns = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 50, FlowDirection = FlowDirection.RightToLeft };
             var btnAddPhone = new RoundedButton { Text = "+ افزودن شماره", Size = new Size(130, 35) };
             btnAddPhone.Click += (s, e) => AddPhone();
-            var btnDelPhone = new RoundedButton { Text = "حذف", Size = new Size(80, 35), BackColor = Color.FromArgb(220, 53, 69) };
+            var btnDelPhone = new RoundedButton { Text = "حذف", Size = new Size(80, 35), BackColor = Color.FromArgb(190, 55, 75) };
             btnDelPhone.Click += (s, e) => DeletePhone();
             flowPhoneBtns.Controls.Add(btnAddPhone);
             flowPhoneBtns.Controls.Add(btnDelPhone);
@@ -135,7 +138,7 @@ namespace Phonebook
             var flowPersonBtns = new FlowLayoutPanel { Dock = DockStyle.Top, Height = 50, FlowDirection = FlowDirection.RightToLeft };
             var btnAddPerson = new RoundedButton { Text = "+ افزودن فرد", Size = new Size(130, 35) };
             btnAddPerson.Click += (s, e) => AddPerson();
-            var btnDelPerson = new RoundedButton { Text = "حذف", Size = new Size(80, 35), BackColor = Color.FromArgb(220, 53, 69) };
+            var btnDelPerson = new RoundedButton { Text = "حذف", Size = new Size(80, 35), BackColor = Color.FromArgb(190, 55, 75) };
             btnDelPerson.Click += (s, e) => DeletePerson();
             flowPersonBtns.Controls.Add(btnAddPerson);
             flowPersonBtns.Controls.Add(btnDelPerson);
@@ -163,6 +166,19 @@ namespace Phonebook
             
             gridPanel.Controls.Add(gridCustomers);
             split.Panel1.Controls.Add(gridPanel);
+
+            StyleInput(txtName);
+            StyleInput(txtAddress);
+            StyleInput(txtPostal);
+            StyleInput(txtSearch);
+        }
+
+        private void StyleInput(TextBox input)
+        {
+            input.BackColor = Color.FromArgb(248, 250, 253);
+            input.ForeColor = Color.FromArgb(36, 48, 68);
+            input.BorderStyle = BorderStyle.FixedSingle;
+            input.Font = FontHelper.GetFont(11);
         }
 
         // متد کمکی برای ساخت جدول‌های زیبا و مدرن
@@ -176,15 +192,22 @@ namespace Phonebook
                 BackgroundColor = Color.White, BorderStyle = BorderStyle.None,
                 RowHeadersVisible = false, AllowUserToResizeRows = false,
                 EnableHeadersVisualStyles = false,
-                ColumnHeadersHeight = 40, RowTemplate = { Height = 35 }
+                ColumnHeadersHeight = 44, RowTemplate = { Height = 39 }, GridColor = Color.FromArgb(232, 237, 244), CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal, ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None, SelectionMode = DataGridViewSelectionMode.FullRowSelect, MultiSelect = false
             };
-            grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(31, 42, 68);
+            grid.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(24, 39, 66);
             grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
             grid.ColumnHeadersDefaultCellStyle.Font = FontHelper.GetFont(10, FontStyle.Bold);
             grid.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleCenter;
-            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(246, 248, 252);
-            grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(13, 110, 253);
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(245, 248, 252);
+            grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(20, 115, 105);
             grid.DefaultCellStyle.SelectionForeColor = Color.White;
+            grid.DefaultCellStyle.ForeColor = Color.FromArgb(43, 55, 76);
+            grid.DefaultCellStyle.Font = FontHelper.GetFont(10);
+            grid.DefaultCellStyle.Padding = new Padding(7, 2, 7, 2);
+            grid.ColumnHeadersDefaultCellStyle.Padding = new Padding(7, 0, 7, 0);
+            grid.RowHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
+            grid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+            grid.AllowUserToResizeColumns = true;
             return grid;
         }
 
